@@ -1,4 +1,5 @@
-const { app, dialog, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, dialog, BrowserWindow, ipcMain, Menu, screen } = require('electron');
+const robot = require('robotjs');
 const path = require('path');
 let win = null;
 
@@ -32,6 +33,13 @@ ipcMain.on('on-peer-connected', (e, id) => {
 ipcMain.on('on-peer-stream', (e, id) => {
     onPeerStream(id)
 });
+ipcMain.on('robot', (e, data) => {
+    const { clientX, clientY, videoWidth, videoHeight } = data;
+    const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+    const x = width / videoWidth / clientX;
+    const y = height / videoHeight / clientY;
+    robot.moveMouse(x, y);
+})
 
 
 function onPeerOpen(id) {

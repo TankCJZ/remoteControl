@@ -1,3 +1,5 @@
+// 远程界面显示
+const { desktopCapturer, ipcRenderer } = window.require('electron');
 const $ = (selector) => {
   return document.querySelector(selector);
 }
@@ -5,7 +7,16 @@ const video = $('#video');
 const $localCode = $('#localCode');
 const $remoteCode = $('#remoteCode');
 const $connect = $('#connect');
-const { desktopCapturer, ipcRenderer } = window.require('electron');
+const peerServerConfig = {
+  host: '192.168.96.128',
+  port: 9000,
+  path: '/',
+  debug: 4
+};
+
+const peer = new Peer(randomCode(), peerServerConfig);
+let localConn = null;
+let remoteConn = null;
 
 // 获取桌面流
 async function getScreenStream() {
@@ -22,7 +33,7 @@ async function getScreenStream() {
               chromeMediaSourceId: sources[0].id,
               maxWidth: window.screen.width,
               maxHeight: window.screen.height,
-              },
+            },
           },
       })
       .then((stream) => {
@@ -36,6 +47,7 @@ async function getScreenStream() {
   });
 }
 
+// 生成随机账号码
 function randomCode() {
   if (localStorage['localCode']) {
       return localStorage['localCode'];
@@ -45,16 +57,6 @@ function randomCode() {
       return localCode;
   }
 }
-
-const peer = new Peer(randomCode(), {
-  host: '192.168.96.128',
-  port: 9000,
-  path: '/',
-  debug: 4
-});
-let localConn = null;
-let remoteConn = null;
-let remote = '';
 
 // 重置界面
 function resetView() {
@@ -93,6 +95,7 @@ peer.on('connection', conn => {
   console.log('已接受连接', remoteConn);
   remoteConn.on('data', data => {
       console.log('收到消息: ', data);
+      handleRemoteMessage(data);
       if (data.remoteCode) {
           $('#beControl').style.display = 'block';
           $('.main').style.display = 'none';
@@ -100,6 +103,20 @@ peer.on('connection', conn => {
       }
   });
 });
+
+// 处理收到的消息
+function handleRemoteMessage(data) {
+  if (!data) return;
+  if (data.type === 'mousemove') {
+    // 鼠标移动
+    ipcRenderer.send('robot', data);
+  } else if (data.type === 'mousedown') {
+    // 鼠标按下
+  } else {
+    //其他消息
+    console.log('其他消息:', data)
+  }
+}
 
 // 处理远程相应stream
 function handleRemoteStream(stream) {
@@ -190,4 +207,6 @@ $connect.addEventListener('click', e => {
   }
   peerConnect(remoteCode);
   onCallStream(remoteCode);
+  // 远程控制
+  require('./robotHandle.js');
 })
