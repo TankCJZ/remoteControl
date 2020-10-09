@@ -34,12 +34,27 @@ ipcMain.on('on-peer-stream', (e, id) => {
     onPeerStream(id)
 });
 ipcMain.on('robot', (e, data) => {
+
+    if (data.type === 'mousemove') {
+        handleMousemove(data);
+    } else if (data.type === 'mousedown') {
+        handleMousedown(data);
+    } else {
+
+    }
+})
+
+function handleMousemove(data) {
     const { clientX, clientY, videoWidth, videoHeight } = data;
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
     const x = width / videoWidth / clientX;
     const y = height / videoHeight / clientY;
     robot.moveMouse(x, y);
-})
+}
+
+function handleMousedown(data) {
+    robot.mouseClick(data.button);
+}
 
 
 function onPeerOpen(id) {

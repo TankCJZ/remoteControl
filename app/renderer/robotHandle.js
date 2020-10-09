@@ -15,6 +15,10 @@ window.addEventListener('mousemove', e => {
 
 // 鼠标按下
 window.addEventListener('mousedown', e => {
-  console.log(e);
+  const which = e.which;
+  const buttons = ['left', 'left', 'middle', 'right'];
+  sendData({
+    type: 'mousedown',
+    button: buttons[which],
+  });
 });
-
