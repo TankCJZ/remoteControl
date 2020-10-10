@@ -3,7 +3,7 @@ const { desktopCapturer, ipcRenderer } = window.require('electron');
 const $ = (selector) => {
   return document.querySelector(selector);
 }
-const video = $('#video');
+const $video = $('#video');
 const $localCode = $('#localCode');
 const $remoteCode = $('#remoteCode');
 const $connect = $('#connect');
@@ -11,7 +11,7 @@ const peerServerConfig = {
   host: '192.168.96.128',
   port: 9000,
   path: '/',
-  debug: 4
+  debug: 1
 };
 
 const peer = new Peer(randomCode(), peerServerConfig);
@@ -88,7 +88,7 @@ peer.on('close', err => {
   resetView();
 });
 
-// 接受连接
+// 接受远程连接
 peer.on('connection', conn => {
   ipcRenderer.send('on-peer-connection');
   remoteConn = conn;
@@ -107,33 +107,30 @@ peer.on('connection', conn => {
 // 处理收到的消息
 function handleRemoteMessage(data) {
   if (!data) return;
-  if (data.type === 'mousemove') {
-    // 鼠标移动
+  if (data.type) {
     ipcRenderer.send('robot', data);
-  } else if (data.type === 'mousedown') {
-    // 鼠标按下
   } else {
     //其他消息
     console.log('其他消息:', data)
   }
 }
 
-// 处理远程相应stream
+// 显示远程界面到本地video
 function handleRemoteStream(stream) {
   // 隐藏main界面
   $('.container').style.display = 'none';
   ipcRenderer.send('on-peer-stream');
-  video.srcObject = stream;
-  video.onloadedmetadata = (e) => {
-      video.play();
+  $video.srcObject = stream;
+  $video.onloadedmetadata = (e) => {
+      $video.play();
   }
 }
 
-// 接受流数据
+// 响应远程界面
 peer.on('call', function(call) {
   getScreenStream()
       .then(function(stream) {
-          call.answer(stream); // Answer the call with an A/V stream.
+          call.answer(stream); // 响应流
           call.on('close', () => {
             alert('r stream close');
           });
@@ -146,7 +143,7 @@ peer.on('call', function(call) {
       });
 });
 
-// 发送流数据
+// 请求远程界面显示
 function onCallStream(id) {
   getScreenStream()
       .then(function(stream) {
@@ -205,8 +202,10 @@ $connect.addEventListener('click', e => {
       alert('请输入远程设备码');
       return;
   }
+  // 建立连接
   peerConnect(remoteCode);
+  // 请求远程界面
   onCallStream(remoteCode);
-  // 远程控制
+  // 请求远程控制
   require('./robotHandle.js');
 });

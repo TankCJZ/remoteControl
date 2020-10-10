@@ -1,82 +1,15 @@
-const { app, dialog, BrowserWindow, ipcMain, Menu, screen } = require('electron');
-const robot = require('robotjs');
-const path = require('path');
+const { app, dialog } = require('electron');
+const createWindow = require('./createWindow.js');
+const { event } = require('./mainPeer.js');
 let win = null;
 
-function createWindow() {
-    win = new BrowserWindow({
-        width: 600,
-        height: 200,
-        webPreferences: {
-            nodeIntegration: true
-        }
-    });
-
-    Menu.setApplicationMenu(null);
-    win.webContents.openDevTools(true);
-
-    win.loadFile(path.resolve(__dirname, '../renderer/stream.html'));
-
-}
-
-// peer-open
-ipcMain.on('on-peer-open', (e, id) => {
-    onPeerOpen(id);
-});
-ipcMain.on('on-peer-connection', onPeerConnection);
-ipcMain.on('on-peer-connect', (e, id) => {
-    onPeerConnect(id)
-});
-ipcMain.on('on-peer-connected', (e, id) => {
-    onPeerConnected(id)
-});
-ipcMain.on('on-peer-stream', (e, id) => {
-    onPeerStream(id)
-});
-ipcMain.on('robot', (e, data) => {
-
-    if (data.type === 'mousemove') {
-        handleMousemove(data);
-    } else if (data.type === 'mousedown') {
-        handleMousedown(data);
-    } else {
-
+// 监听连接成功-窗体重新设置大小
+event.once('streamSuccess', id => {
+    if (win) {
+        win.setSize(1280, 1024, true);
     }
-})
-
-function handleMousemove(data) {
-    const { clientX, clientY, videoWidth, videoHeight } = data;
-    const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-    const x = width / videoWidth / clientX;
-    const y = height / videoHeight / clientY;
-    robot.moveMouse(x, y);
-}
-
-function handleMousedown(data) {
-    robot.mouseClick(data.button);
-}
-
-
-function onPeerOpen(id) {
-    console.log('peer 创建成功', id)
-}
-
-function onPeerConnection() {
-    console.log('接受连接成功')
-}
-
-function onPeerConnect(id) {
-    console.log('开始连接对象=>', id);
-}
-
-function onPeerConnected(id) {
-    console.log('连接对象成功=>', id);
-}
-
-function onPeerStream() {
-    win.setSize(1280, 1024, true);
-}
-
+});
+// 退出
 app.on('window-all-closed', (e) => {
     e.preventDefault();
     dialog.showMessageBox({
@@ -92,10 +25,13 @@ app.on('window-all-closed', (e) => {
         console.log(res);
     })
     if (process.platform !== 'darwin') {
-        //app.quit();
+        app.quit();
     }
     return true;
 });
 
+// 启动
 app.whenReady()
-    .then(createWindow);
+    .then(() => {
+        win = createWindow();
+    });

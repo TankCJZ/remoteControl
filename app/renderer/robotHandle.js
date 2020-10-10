@@ -10,15 +10,29 @@ window.addEventListener('mousemove', e => {
     videoWidth: video.getBoundingClientRect().width,
     videoHeight: video.getBoundingClientRect().height,
   };
-  sendData(data);
+  //sendData(data);
 });
 
 // 鼠标按下
 window.addEventListener('mousedown', e => {
+  const { clientX, clientY } = e;
   const which = e.which;
   const buttons = ['left', 'left', 'middle', 'right'];
   sendData({
     type: 'mousedown',
     button: buttons[which],
+    clientX,
+    clientY,
+    videoWidth: video.getBoundingClientRect().width,
+    videoHeight: video.getBoundingClientRect().height,
+  });
+});
+
+// 键盘按下
+window.addEventListener('keyup', e => {
+  const key = e.key;
+  sendData({
+    type: 'keyup',
+    key,
   });
 });
