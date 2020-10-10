@@ -10,7 +10,7 @@ window.addEventListener('mousemove', e => {
     videoWidth: video.getBoundingClientRect().width,
     videoHeight: video.getBoundingClientRect().height,
   };
-  //sendData(data);
+  sendData(data);
 });
 
 // 鼠标按下

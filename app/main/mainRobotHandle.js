@@ -4,7 +4,7 @@ const { screen } = require('electron');
 
 function mainRobotHandle(data) {
   if (data.type === 'mousemove') {
-      handleMousemove(data);
+      //handleMousemove(data);
   } else if (data.type === 'mousedown') {
       handleMousedown(data);
   } else if (data.type === 'keyup') {

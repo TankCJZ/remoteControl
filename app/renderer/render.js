@@ -8,7 +8,7 @@ const $localCode = $('#localCode');
 const $remoteCode = $('#remoteCode');
 const $connect = $('#connect');
 const peerServerConfig = {
-  host: '192.168.96.128',
+  host: '192.168.96.129',
   port: 9000,
   path: '/',
   debug: 1
