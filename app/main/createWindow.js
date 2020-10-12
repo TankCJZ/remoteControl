@@ -1,6 +1,9 @@
 const { BrowserWindow, Menu } = require('electron');
 const path = require('path');
 
+let win = null;
+let willClose = false;
+
 function createWindow() {
   win = new BrowserWindow({
       width: 600,
@@ -10,6 +13,17 @@ function createWindow() {
       }
   });
 
+  // 退出
+  win.on('close', e => {
+    e.preventDefault();
+    if (willClose) {
+      win = null;
+    } else {
+      win.hide();
+    }
+  });
+  
+
   Menu.setApplicationMenu(null);
   win.webContents.openDevTools(true);
 
@@ -18,4 +32,14 @@ function createWindow() {
   return win;
 }
 
-module.exports = createWindow;
+function close() {
+  if (win) {
+    willClose = true;
+    win.close();
+  }
+}
+
+module.exports = {
+  createWindow,
+  close
+};
